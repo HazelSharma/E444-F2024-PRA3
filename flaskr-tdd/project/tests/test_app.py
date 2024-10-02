@@ -63,7 +63,6 @@ def test_login_logout(client):
     rv = login(client, app.config["USERNAME"], app.config["PASSWORD"] + "x")
     assert b"Invalid password" in rv.data
 
-
 def test_messages(client):
     """Ensure that user can post messages"""
     login(client, app.config["USERNAME"], app.config["PASSWORD"])
@@ -81,3 +80,21 @@ def test_delete_message(client):
     rv = client.get('/delete/1')
     data = json.loads(rv.data)
     assert data["status"] == 1
+
+def test_search(client):
+    """Ensure that posts can be searched"""
+    login(client, app.config["USERNAME"], app.config["PASSWORD"])
+    rv2 = client.post(
+        "/add",
+        data=dict(title="Bye", text="<strong>CSS</strong> allowed here."),
+        follow_redirects=True,
+    )
+    rv3 = client.get(
+        "/search/",
+        query_string="CSS"
+    )
+    assert rv3.status_code == 200 
+    #print(rv3.data)
+    assert b"Bye" in rv3.data
+    #assert b"<strong>CSS</strong> allowed here" in rv3.data
+    
