@@ -88,22 +88,28 @@ def test_delete_message(client):
 def test_search(client):
     """Ensure that posts can be searched"""
     login(client, app.config["USERNAME"], app.config["PASSWORD"])
-    rv2 = client.post(
+    rv = client.post(
         "/add",
-        data=dict(title="Bye", text="<strong>CSS</strong> allowed here."),
+        data=dict(title="Hi", text="<strong>CSS</strong> allowed here."),
         follow_redirects=True,
     )
-    rv3 = client.get(
+    rv2 = client.get(
         "/search/",
-        query_string="CSS"
+        query_string="CSS", 
     )
-    assert rv3.status_code == 200 
-    #print(rv3.data)
-    assert b"Bye" in rv3.data
-    #assert b"<strong>CSS</strong> allowed here" in rv3.data
+    assert rv2.status_code == 200 
+    assert b"Hi" not in rv2.data
+    assert b"<strong>CSS</strong> allowed here" not in rv2.data
 
 def test_login_required(client):
-    """Ensure that posts can be searched"""
+    """Ensure the messages are not being deleted, when logged out"""
     login(client, app.config["USERNAME"], app.config["PASSWORD"])
+    rv = client.get("/delete/1")
+    data = json.loads(rv.data)
+    assert data["status"] == 1
+    client.get("/logout", follow_redirects=True)
+    rv = client.get("/delete/1")
+    data = json.loads(rv.data)
+    assert data["status"] == 0
   
     
