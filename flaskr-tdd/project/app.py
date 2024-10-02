@@ -25,6 +25,9 @@ db = SQLAlchemy(app)
 
 from project import models
 
+with app.app_context():  
+    db.create_all() 
+    db.session.commit()  
 
 @app.route('/')
 def index():
@@ -81,7 +84,6 @@ def delete_entry(post_id):
     except Exception as e:
         result = {'status': 0, 'message': repr(e)}
     return jsonify(result)
-
 
 if __name__ == "__main__":
     app.run()
