@@ -1,4 +1,3 @@
-import os
 import pytest
 import json
 from pathlib import Path
@@ -18,7 +17,6 @@ def client():
         db.create_all()  # setup
         yield app.test_client()  # tests run here
         db.drop_all()  # teardown
-
 
 
 def login(client, username, password):
@@ -63,6 +61,7 @@ def test_login_logout(client):
     rv = login(client, app.config["USERNAME"], app.config["PASSWORD"] + "x")
     assert b"Invalid password" in rv.data
 
+
 def test_messages(client):
     """Ensure that user can post messages"""
     login(client, app.config["USERNAME"], app.config["PASSWORD"])
@@ -75,6 +74,7 @@ def test_messages(client):
     assert b"&lt;Hello&gt;" in rv.data
     assert b"<strong>HTML</strong> allowed here" in rv.data
 
+
 def test_delete_message(client):
     """Ensure the messages are being deleted"""
     rv = client.get("/delete/1")
@@ -85,6 +85,7 @@ def test_delete_message(client):
     data = json.loads(rv.data)
     assert data["status"] == 1
 
+
 def test_search(client):
     """Ensure that posts can be searched"""
     login(client, app.config["USERNAME"], app.config["PASSWORD"])
@@ -93,13 +94,14 @@ def test_search(client):
         data=dict(title="Hi", text="<strong>CSS</strong> allowed here."),
         follow_redirects=True,
     )
-    rv2 = client.get(
+    rv = client.get(
         "/search/",
-        query_string="CSS", 
+        query_string="CSS",
     )
-    assert rv2.status_code == 200 
-    assert b"Hi" not in rv2.data
-    assert b"<strong>CSS</strong> allowed here" not in rv2.data
+    assert rv.status_code == 200
+    assert b"Hi" not in rv.data
+    assert b"<strong>CSS</strong> allowed here" not in rv.data
+
 
 def test_login_required(client):
     """Ensure the messages are not being deleted, when logged out"""
@@ -111,5 +113,3 @@ def test_login_required(client):
     rv = client.get("/delete/1")
     data = json.loads(rv.data)
     assert data["status"] == 0
-  
-    
